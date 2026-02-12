@@ -1,4 +1,4 @@
-name: Build OGX-Mini Firmware (PS3 Fixed)
+name: Build OGX-Mini Firmware
 
 on:
   push:

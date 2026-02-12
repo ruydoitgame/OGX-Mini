@@ -8,7 +8,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    strategy:
+      fail-fast: false
+      matrix:
+        # Danh sách các board bạn muốn build
+        board: [PI_PICO, PI_PICO2, RP2040_ZERO, ADAFRUIT_FEATHER]
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -21,19 +26,22 @@ jobs:
         sudo apt-get install -y cmake ninja-build gcc-arm-none-eabi \
           libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
     
-    - name: Build for Pi Pico
+    - name: Build for ${{ matrix.board }}
       run: |
         cd Firmware/RP2040
-        mkdir -p build
-        cd build
+        # Xóa build cũ nếu có và tạo mới
+        rm -rf build_${{ matrix.board }}
+        mkdir -p build_${{ matrix.board }}
+        cd build_${{ matrix.board }}
         cmake -S .. -B . -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
-          -DOGXM_BOARD=PI_PICO \
+          -DOGXM_BOARD=${{ matrix.board }} \
           -DMAX_GAMEPADS=1
         cmake --build .
     
-    - name: Upload Pi Pico firmware
+    - name: Upload firmware for ${{ matrix.board }}
       uses: actions/upload-artifact@v4
       with:
-        name: PI_PICO.uf2
-        path: Firmware/RP2040/build/OGX-Mini.uf2
+        # Đặt tên artifact riêng biệt cho từng board để tránh lỗi v4
+        name: OGX-Mini-${{ matrix.board }}
+        path: Firmware/RP2040/build_${{ matrix.board }}/OGX-Mini.uf2

@@ -8,7 +8,7 @@
 namespace PS3 
 {
 	static constexpr uint8_t MAGIC_BYTES[8] = { 0x21, 0x26, 0x01, 0x07, 0x00, 0x00, 0x00, 0x00 };
-	static constexpr uint8_t JOYSTICK_MID = 0x7F;
+	static constexpr uint8_t JOYSTICK_MID = 0x80;
 	static constexpr uint16_t SIXAXIS_MID = 0xFF01;
 
 	namespace ReportID 
@@ -143,7 +143,7 @@ namespace PS3
 			joystick_rx = JOYSTICK_MID;
 			joystick_ry = JOYSTICK_MID;
 			plugged = PlugState::PLUGGED;
-			power_status = PowerState::FULL;
+			power_status = PowerState::CHARGING;
 			rumble_status = RumbleState::WIRED_RUMBLE;
 			acceler_x = acceler_y = acceler_z = gyro_z = SIXAXIS_MID;
 		}

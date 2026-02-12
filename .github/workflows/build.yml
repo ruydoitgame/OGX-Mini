@@ -24,18 +24,23 @@ jobs:
 
     - name: Set up Pico SDK
       run: |
-        # Sử dụng bản 1.5.1 để đảm bảo tương thích với các hàm timer cũ
         git clone --depth 1 --branch 1.5.1 https://github.com/raspberrypi/pico-sdk.git $HOME/pico-sdk
         cd $HOME/pico-sdk
         git submodule update --init
+        # Thiết lập biến môi trường cho toàn bộ các bước sau
         echo "PICO_SDK_PATH=$HOME/pico-sdk" >> $GITHUB_ENV
+        echo "PICO_BOARD=pico" >> $GITHUB_ENV
 
     - name: Build for Pi Pico
+      env:
+        # Ép biến môi trường một lần nữa tại bước build
+        PICO_BOARD: pico
+        PICO_SDK_PATH: ${{ github.workspace }}/../../pico-sdk
       run: |
         cd Firmware/RP2040
         mkdir -p build
         cd build
-        # THAY ĐỔI QUAN TRỌNG: Thêm -DPICO_BOARD=pico
+        # Sử dụng đường dẫn tuyệt đối cho SDK và chỉ định board trực tiếp
         cmake -S .. -B . -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
           -DPICO_SDK_PATH=$HOME/pico-sdk \

@@ -1,4 +1,4 @@
-name: Build OGX-Mini
+name: Build OGX-Mini ps3
 
 on:
   push:

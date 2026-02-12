@@ -8,40 +8,42 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # Danh sách các board bạn muốn build
-        board: [PI_PICO, PI_PICO2, RP2040_ZERO, ADAFRUIT_FEATHER]
-
+    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         submodules: recursive
-    
+        fetch-depth: 0
+
     - name: Install ARM toolchain and dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y cmake ninja-build gcc-arm-none-eabi \
           libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
-    
-    - name: Build for ${{ matrix.board }}
+
+    - name: Set up Pico SDK
+      run: |
+        git clone --depth 1 --branch 1.5.1 https://github.com/raspberrypi/pico-sdk.git $HOME/pico-sdk
+        cd $HOME/pico-sdk
+        git submodule update --init
+        echo "PICO_SDK_PATH=$HOME/pico-sdk" >> $GITHUB_ENV
+
+    - name: Build for Pi Pico
       run: |
         cd Firmware/RP2040
-        # Xóa build cũ nếu có và tạo mới
-        rm -rf build_${{ matrix.board }}
-        mkdir -p build_${{ matrix.board }}
-        cd build_${{ matrix.board }}
+        mkdir -p build
+        cd build
+        # Thêm -DPICO_SDK_PATH để CMake nhận diện được SDK
         cmake -S .. -B . -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
-          -DOGXM_BOARD=${{ matrix.board }} \
+          -DPICO_SDK_PATH=$HOME/pico-sdk \
+          -DOGXM_BOARD=PI_PICO \
           -DMAX_GAMEPADS=1
         cmake --build .
     
-    - name: Upload firmware for ${{ matrix.board }}
+    - name: Upload Pi Pico firmware
       uses: actions/upload-artifact@v4
       with:
-        # Đặt tên artifact riêng biệt cho từng board để tránh lỗi v4
-        name: OGX-Mini-${{ matrix.board }}
-        path: Firmware/RP2040/build_${{ matrix.board }}/OGX-Mini.uf2
+        name: OGX-Mini-PiPico
+        path: Firmware/RP2040/build/OGX-Mini.uf2
